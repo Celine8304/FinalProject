@@ -5,8 +5,18 @@ const request = axios.create({
   timeout: 5000,
 })
 
-export function getProjectList() {
-  return request.get('/projects/')
+export function archiveProject(projectId, isArchived = true) {
+  return request.put(`/projects/${projectId}/archive`, null, {
+    params: {
+      is_archived: isArchived
+    }
+  })
+}
+
+export function getProjectList(username) {
+  return request.get('/projects/', {
+    params: { username }
+  })
 }
 
 export function createProject(data) {

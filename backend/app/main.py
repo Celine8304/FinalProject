@@ -15,8 +15,12 @@ from app.api.record import router as record_router
 from app.api.stats import router as stats_router
 from app.api.ai import router as ai_router
 
+from app.models.user import User
+from app.api.user import router as user_router
+
 app = FastAPI(title="等级保护测评辅助系统")
 app.include_router(ai_router)
+app.include_router(user_router)
 
 Base.metadata.create_all(bind=engine)
 

@@ -1,5 +1,25 @@
 <template>
-  <div style="padding: 24px;">
+  <div>
+    <div class="top-navbar">
+      <div class="top-navbar-title">等保测评辅助系统</div>
+
+      <el-dropdown trigger="hover">
+        <div class="user-avatar">
+          {{ currentUser?.username?.slice(0, 1)?.toUpperCase() || 'U' }}
+        </div>
+
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item disabled>
+              {{ currentUser?.username || '未登录' }}
+            </el-dropdown-item>
+            <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
+
+    <div style="padding: 24px;">
     <el-card style="margin-bottom: 16px;">
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -19,6 +39,13 @@
         <el-descriptions-item label="标准体系">{{ project.standard_system }}</el-descriptions-item>
       </el-descriptions>
     </el-card>
+    <el-alert
+      v-if="project?.is_archived"
+      title="当前项目已归档，默认只读。如需修改，请先返回项目列表取消归档。"
+      type="info"
+      :closable="false"
+      style="margin-bottom: 16px;"
+    />
 
     <el-tabs v-model="activeMainTab">
       <el-tab-pane label="系统构成" name="assetStructure">
@@ -28,7 +55,7 @@
         </el-tabs>
 
         <div style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
-          <el-button type="primary" @click="openCreateDialog">新增资产</el-button>
+          <el-button type="primary" @click="openCreateDialog" :disabled="project?.is_archived">新增资产</el-button>
         </div>
 
         <el-table :data="filteredAssets" border style="width: 100%" v-loading="loadingAssets">
@@ -47,8 +74,8 @@
                 <el-button text class="more-btn">⋯</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                    <el-dropdown-item command="delete">删除</el-dropdown-item>
+                    <el-dropdown-item :disabled="project?.is_archived" command="edit">编辑</el-dropdown-item>
+                    <el-dropdown-item :disabled="project?.is_archived" command="delete">删除</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -94,7 +121,7 @@
                 </span>
 
                 <div style="display: flex; gap: 8px;">
-  <el-upload v-if="selectedAsset" :show-file-list="false" :before-upload="handleImportExcel"
+  <el-upload v-if="selectedAsset && !project?.is_archived" :show-file-list="false" :before-upload="handleImportExcel"
     accept=".xlsx">
     <el-button type="success">
       导入 Excel
@@ -129,13 +156,13 @@
 
                 <el-table-column label="结果记录" min-width="220">
                   <template #default="scope">
-                    <el-input v-model="scope.row.result_record" type="textarea" :rows="2" placeholder="请输入结果记录" />
+                    <el-input v-model="scope.row.result_record" type="textarea" :rows="2" placeholder="请输入结果记录" :disabled="project?.is_archived" />
                   </template>
                 </el-table-column>
 
                 <el-table-column label="符合情况" width="160">
                   <template #default="scope">
-                    <el-select v-model="scope.row.compliance_status" placeholder="请选择" style="width: 100%">
+                    <el-select v-model="scope.row.compliance_status" placeholder="请选择" style="width: 100%" :disabled="project?.is_archived">
                       <el-option label="符合" value="compliant" />
                       <el-option label="部分符合" value="partial" />
                       <el-option label="不符合" value="non_compliant" />
@@ -149,6 +176,7 @@
                   <template #default="scope">
                     <div style="display: flex; gap: 8px;">
                       <el-button
+                        v-if="!project?.is_archived"
                         type="primary"
                         link
                         :loading="savingRecordId === scope.row.id"
@@ -158,7 +186,7 @@
                       </el-button>
 
                       <el-button
-                        v-if="scope.row.compliance_status === 'partial' || scope.row.compliance_status === 'non_compliant'"
+                        v-if="!project?.is_archived && (scope.row.compliance_status === 'partial' || scope.row.compliance_status === 'non_compliant')"
                         type="warning"
                         link
                         @click="openAiSuggestion(scope.row)"
@@ -347,11 +375,23 @@
   </template>
 
   <div v-loading="priorityAiLoading" class="priority-ai-text">
-    {{ priorityAiText || '暂无补充意见' }}
+    <div v-if="priorityAiItems.length === 0">暂无补充意见</div>
+
+    <div
+      v-for="(item, index) in priorityAiItems"
+      :key="index"
+      class="priority-ai-item"
+    >
+      <span class="priority-ai-seq">
+        建议关注序号{{ item.seq_refs.join('、') }}：
+      </span>
+      <span>{{ item.text }}</span>
+    </div>
   </div>
 </el-card>
   </div>
 </el-drawer>
+    </div>
   </div>
 </template>
 
@@ -366,11 +406,12 @@ import { getProjectStats } from '../api/stats'
 import AiSuggestionDialog from '../components/project/AiSuggestionDialog.vue'
 
 const priorityAiLoading = ref(false)
-const priorityAiText = ref('')
+const priorityAiItems = ref([])
 const aiDialogVisible = ref(false)
 const priorityDrawerVisible = ref(false)
 const currentAiRecordId = ref(null)
 const route = useRoute()
+const currentUser = ref(JSON.parse(localStorage.getItem('currentUser') || 'null'))
 const router = useRouter()
 const projectId = route.params.id
 
@@ -423,24 +464,24 @@ const fetchPriorityData = async () => {
 
 const fetchPriorityAiAdvice = async () => {
   if (!selectedAsset.value) {
-    priorityAiText.value = ''
+    priorityAiItems.value = []
     return
   }
 
   if (priorityTableData.value.length === 0) {
-    priorityAiText.value = ''
+    priorityAiItems.value = []
     return
   }
 
   try {
     priorityAiLoading.value = true
     const res = await getPriorityAiAdviceByAsset(selectedAsset.value.id)
-    priorityAiText.value = res.data.advice || ''
+    priorityAiItems.value = res.data.items || []
   } catch (error) {
     console.error(error)
     const msg = error?.response?.data?.detail || '获取 AI 补充意见失败'
     ElMessage.error(msg)
-    priorityAiText.value = ''
+    priorityAiItems.value = []
   } finally {
     priorityAiLoading.value = false
   }
@@ -638,6 +679,11 @@ const guideOptions = computed(() => {
 })
 
 const openCreateDialog = () => {
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再新增资产')
+    return
+  }
+
   assetDialogMode.value = 'create'
   editingAssetId.value = null
   assetForm.value = {
@@ -650,6 +696,11 @@ const openCreateDialog = () => {
 }
 
 const openEditDialog = (row) => {
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再编辑资产')
+    return
+  }
+
   assetDialogMode.value = 'edit'
   editingAssetId.value = row.id
   assetForm.value = {
@@ -663,6 +714,11 @@ const openEditDialog = (row) => {
 
 const handleSubmitAsset = async () => {
   saving.value = true
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再保存资产')
+    saving.value = false
+    return
+  }
   try {
     const payload = {
       project_id: Number(projectId),
@@ -704,6 +760,10 @@ const handleSubmitAsset = async () => {
 }
 
 const handleDeleteAsset = async (row) => {
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再删除资产')
+    return
+  }
   try {
     await ElMessageBox.confirm(
       `确认删除资产「${row.asset_name}」吗？`,
@@ -754,6 +814,11 @@ const handleTreeNodeClick = (data) => {
 
 const handleSaveRecord = async (row) => {
   savingRecordId.value = row.id
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再保存核查记录')
+    savingRecordId.value = null
+    return
+  }
   try {
     await updateRecord(row.id, {
       result_record: row.result_record,
@@ -778,6 +843,12 @@ const goBack = () => {
   router.push('/projects')
 }
 
+const handleLogout = () => {
+  localStorage.removeItem('currentUser')
+  ElMessage.success('已退出登录')
+  router.push('/login')
+}
+
 const handleExportExcel = () => {
   if (!selectedAsset.value) {
     ElMessage.warning('请先选择资产')
@@ -793,6 +864,10 @@ const handleExportExcel = () => {
 const handleImportExcel = async (file) => {
   if (!selectedAsset.value) {
     ElMessage.warning('请先选择资产')
+    return false
+  }
+  if (project.value?.is_archived) {
+    ElMessage.warning('当前项目已归档，请先取消归档后再导入 Excel')
     return false
   }
 
@@ -833,6 +908,50 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.top-navbar {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.top-navbar-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #303133;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #409eff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.priority-ai-item {
+  margin-bottom: 10px;
+  line-height: 1.8;
+}
+
+.priority-ai-item:last-child {
+  margin-bottom: 0;
+}
+
+.priority-ai-seq {
+  font-weight: 700;
+  color: #303133;
+}
+
 .priority-score-text {
   font-weight: 700;
   color: #303133;

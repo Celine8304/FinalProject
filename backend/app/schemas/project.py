@@ -10,6 +10,8 @@ class ProjectCreate(BaseModel):
     organization_name: Optional[str] = None
     level: Optional[str] = None
     standard_system: Optional[str] = None
+    is_archived: Optional[bool] = False
+    user_id: int | None = None
 
 
 class ProjectUpdate(BaseModel):
@@ -19,6 +21,8 @@ class ProjectUpdate(BaseModel):
     organization_name: Optional[str] = None
     level: Optional[str] = None
     standard_system: Optional[str] = None
+    is_archived: Optional[bool] = None
+    user_id: int | None = None
 
 
 class ProjectResponse(BaseModel):
@@ -30,6 +34,8 @@ class ProjectResponse(BaseModel):
     level: Optional[str] = None
     standard_system: Optional[str] = None
     created_at: datetime
+    is_archived: bool
+    user_id: int | None = None
 
     class Config:
         from_attributes = True

@@ -15,8 +15,13 @@ from typing import List
 
 router = APIRouter(prefix="/ai", tags=["AI辅助"])
 
+class AiPriorityAdviceItem(BaseModel):
+    seq_refs: list[str]
+    text: str
+
 class AiPriorityAdviceResponse(BaseModel):
-    advice: str
+    items: list[AiPriorityAdviceItem]
+
 @router.get("/priority/asset/{asset_id}", response_model=AiPriorityAdviceResponse)
 def generate_priority_ai_advice(asset_id: int, db: Session = Depends(get_db)):
     asset = db.query(Asset).filter(Asset.id == asset_id).first()
@@ -77,13 +82,14 @@ def generate_priority_ai_advice(asset_id: int, db: Session = Depends(get_db)):
     ])
 
     system_prompt = """
-你是等级保护测评辅助系统中的优先级补充说明助手。
-你的任务不是重新排序，而是在已有排序结果基础上，补充2到3行简短说明。
-不要输出markdown，不要编号，不要分点。
-"""
+    你是等级保护测评辅助系统中的优先级补充说明助手。
+    你的任务不是重新排序，而是在已有排序结果基础上，输出2到3条简短补充意见。
+    每条意见必须明确指出建议关注的序号。
+    请严格返回 JSON，不要返回 markdown，不要返回代码块，不要返回额外解释。
+    """
 
     user_prompt = f"""
-请根据以下资产整改优先级结果，生成2到3行简短的补充处理建议。
+请根据以下资产整改优先级结果，生成2到3条简短的补充处理建议。
 
 资产名称：{asset.asset_name or ""}
 作业指导书类型：{asset.os_or_db_type or ""}
@@ -91,13 +97,27 @@ def generate_priority_ai_advice(asset_id: int, db: Session = Depends(get_db)):
 当前优先级靠前的问题项如下：
 {top_text}
 
+请严格返回 JSON，格式如下：
+{{
+  "items": [
+    {{
+      "seq_refs": ["6", "7"],
+      "text": "这两项通常整改路径较明确，适合作为前置处理项。"
+    }},
+    {{
+      "seq_refs": ["20"],
+      "text": "该项涉及配置核查与策略加固，建议结合业务窗口安排整改。"
+    }}
+  ]
+}}
+
 要求：
 1. 不要推翻已有排序结果；
 2. 只做补充说明；
-3. 可以提示“同分项中可优先处理整改成本低、见效快的问题”；
-4. 语言简洁，控制在2到3行；
+3. 每条意见都必须指出建议关注的序号；
+4. 语言简洁，控制在2到3条；
 5. 不要写成详细整改方案；
-6. 直接返回纯文本。
+6. 必须返回合法 JSON。
 """
 
     try:
@@ -111,7 +131,27 @@ def generate_priority_ai_advice(asset_id: int, db: Session = Depends(get_db)):
         )
 
         content = response.choices[0].message.content or ""
-        return AiPriorityAdviceResponse(advice=content.strip())
+        content = extract_json_text(content)
+
+        try:
+            parsed = json.loads(content)
+        except Exception:
+            raise HTTPException(
+                status_code=500,
+                detail=f"AI 返回结果不是合法 JSON：{content}"
+            )
+
+        items = parsed.get("items", [])
+        normalized_items = []
+        for item in items:
+            seq_refs = item.get("seq_refs", [])
+            text = str(item.get("text", "")).strip()
+            normalized_items.append({
+                "seq_refs": [str(x).strip() for x in seq_refs],
+                "text": text,
+            })
+
+        return AiPriorityAdviceResponse(items=normalized_items)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI 生成失败：{str(e)}")
 
