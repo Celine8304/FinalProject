@@ -43,12 +43,18 @@ FinalProject/
 ```
 
 ## 六、数据库说明
-
-本项目当前使用 SQLite，不需要额外安装 MySQL。
-
 如果想重置测试数据，可删除该文件后重新启动后端：
 ```bash
 rm finalproject.db
 python3 run.py
 ```
-
+如果想更改数据库
+```bash
+cd ~/Desktop/FinalProject/backend
+sqlite3 finalproject.db
+```
+例如：
+```bash
+ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN lock_until DATETIME;
+```
