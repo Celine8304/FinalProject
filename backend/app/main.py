@@ -44,3 +44,9 @@ app.include_router(stats_router)
 @app.get("/")
 def root():
     return {"message": "Backend is running"}
+
+# from fastapi.responses import HTMLResponse
+
+# @app.get("/xss-test", response_class=HTMLResponse)
+# def xss_test(q: str = ""):
+#     return f"<html><body>{q}</body></html>"
