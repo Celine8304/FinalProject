@@ -4,13 +4,12 @@
 如果项目在桌面：
 ```bash
 cd ~/Desktop/FinalProject/backend
-
+cd ~/Desktop/FinalProject/frontend
 查看当前为止：pwd
 查看当前目录文件：ls
 ```
 ## 2. 安装依赖
 访问 Python 官网 macOS 下载页：https://www.python.org/downloads/macos/
-双击下载的 pkg 文件,一路继续
 ```bash
 /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
 选 1（清华大学）
@@ -21,14 +20,15 @@ source /Users/celine/.zprofile
 brew -v
 python3 -m pip install -r requirements.txt
 ```
+安装 node 的 mac 版：https://nodejs.org/en/download
+在终端输入：npm install
 
 ## 3.  启动前后端
  python3 run.py
-npm install
  npm run dev
 
 ## 5.  启动成功后访问
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
 http://localhost:5173/projects
 
 # FinalProject
