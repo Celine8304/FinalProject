@@ -242,8 +242,13 @@
             </el-form>
           </div>
 
-          <el-button type="danger" plain class="delete-account-btn" @click="deleteAccountDialogVisible = true">注销账户</el-button>
-          <el-button type="danger" class="logout-btn" @click="handleLogout">退出登录</el-button>
+          <el-button type="danger" plain class="delete-account-btn" @click="deleteAccountDialogVisible = true">
+            注销账户
+          </el-button>
+
+          <el-button type="danger" class="logout-btn" @click="handleLogout">
+            退出登录
+          </el-button>
         </div>
       </el-drawer>
 
@@ -950,10 +955,8 @@ onMounted(() => {
   padding: 0 20px;
   text-align: center;
   box-sizing: border-box;
-  transform: translateX(-10px);
 }
 
-:deep(.delete-account-btn > span),
 :deep(.logout-btn > span) {
   width: 100%;
   display: flex;
@@ -998,45 +1001,5 @@ onMounted(() => {
 :global(.dark-mode .user-section-text),
 :global(.dark-mode .login-footer) {
   color: #d9d9d9;
-}
-
-/* 抽屉样式 */
-:global(.dark-mode .el-drawer) {
-  background-color: #141414;
-  color: #f5f5f5;
-}
-
-:global(.dark-mode .el-drawer__header) {
-  border-bottom: 1px solid #303030;
-}
-
-:global(.dark-mode .el-drawer__title) {
-  color: #f5f5f5;
-}
-
-:global(.dark-mode .el-drawer__body) {
-  color: #f5f5f5;
-  background-color: #141414;
-}
-
-/* 表单输入框样式 */
-:global(.dark-mode .el-input__inner) {
-  color: #f5f5f5;
-  background-color: #262626;
-  border-color: #409eff;
-}
-
-:global(.dark-mode .el-input__wrapper) {
-  background-color: #262626;
-  border-color: #409eff;
-}
-
-:global(.dark-mode .el-input__wrapper:hover) {
-  border-color: #66b1ff;
-}
-
-:global(.dark-mode .el-input__wrapper.is-focus) {
-  border-color: #66b1ff;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 </style>

@@ -272,7 +272,7 @@
             <el-col :span="4">
               <el-card>
                 <div class="stats-card">
-                  <div class="stats-number">{{ statsSummary.asset_total }}</div>
+                   <div class="stats-number stats-number-gray">{{ statsSummary.asset_total }}</div>
                   <div class="stats-label">资产总数</div>
                 </div>
               </el-card>
@@ -281,7 +281,7 @@
             <el-col :span="4">
               <el-card>
                 <div class="stats-card">
-                  <div class="stats-number">{{ statsSummary.record_total }}</div>
+                  <div class="stats-number stats-number-gray">{{ statsSummary.record_total }}</div>
                   <div class="stats-label">检查项总数</div>
                 </div>
               </el-card>
@@ -290,7 +290,7 @@
             <el-col :span="4">
               <el-card>
                 <div class="stats-card">
-                  <div class="stats-number">{{ statsSummary.completed_total }}</div>
+                 <div class="stats-number stats-number-gray">{{ statsSummary.completed_total }}</div>
                   <div class="stats-label">已完成项数</div>
                 </div>
               </el-card>
@@ -1585,13 +1585,13 @@ onMounted(async () => {
   background: #141414;
 }
 
-:global(.dark-mode .top-navbar) {
-  background: #1f1f1f;
-  border-bottom: 1px solid #303030;
+:global(body.dark-mode .top-navbar) {
+  background: #141414 !important;
+  border-bottom: 1px solid #303030 !important;
 }
 
-:global(.dark-mode .top-navbar-title) {
-  color: #f5f5f5;
+:global(body.dark-mode .top-navbar-title) {
+  color: #ffffff !important;
 }
 
 :global(.dark-mode .el-card) {
@@ -1700,17 +1700,115 @@ onMounted(async () => {
 }
 
 :global(.dark-mode .asset-tree) {
-  background: #1f1f1f;
+  background: #1f1f1f !important;
+}
+
+:global(.dark-mode .asset-tree .el-tree-node__content) {
+  background: #1f1f1f !important;
+  border-radius: 6px;
+}
+
+:global(.dark-mode .asset-tree .el-tree-node__content:hover) {
+  background: #1f1f1f !important;
 }
 
 :global(.dark-mode .asset-tree-node) {
-  background: transparent;
+  background: #303030 !important;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 :global(.dark-mode .asset-tree-node.is-selected) {
-  background: #1d3557;
+  background: #1d3557 !important;
   border-color: #3b82f6;
   box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
+}
+
+:global(.dark-mode .asset-tree-node-name) {
+  color: #ffffff !important;
+}
+
+:global(.dark-mode .asset-tree-node-sub) {
+  color: #ffffff !important;
+}
+
+:global(.dark-mode .asset-tree-progress) {
+  color: #909399 !important;
+}
+
+:global(.dark-mode .asset-tree-group) {
+  color: #ffffff !important;
+  background: #1f1f1f !important;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  margin-top: 8px;
+}
+
+:global(.dark-mode .el-tabs__item) {
+  color: #ffffff !important;
+}
+
+:global(.dark-mode .el-tabs__item:hover) {
+  color: #409eff !important;
+}
+
+:global(.dark-mode .el-tabs__item.is-active) {
+  color: #409eff !important;
+}
+
+:global(.dark-mode .el-tabs__active-bar) {
+  background-color: #409eff !important;
+}
+
+:global(.dark-mode .el-tabs__nav-wrap::after) {
+  background-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table--border) {
+  border-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table__inner-wrapper::before) {
+  background-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table__row) {
+  border-bottom: 1px solid #303030 !important;
+}
+
+:global(body.dark-mode .el-table__header th) {
+  border-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table__body td) {
+  border-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table__fixed::before),
+:global(body.dark-mode .el-table__fixed-right::before) {
+  background-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table__fixed),
+:global(body.dark-mode .el-table__fixed-right) {
+  border-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-table) {
+  --el-table-border-color: #303030 !important;
+  --el-table-header-bg-color: #1f1f1f !important;
+  --el-table-row-hover-bg-color: #2a2a2a !important;
+}
+
+:global(.dark-mode .asset-tree-node.is-selected) {
+  background: #1d3557 !important;
+  border-color: #3b82f6 !important;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15) !important;
+}
+
+:global(.dark-mode .el-switch__label) {
+  color: #ffffff !important;
 }
 
 :global(.dark-mode .record-table-wrapper),
@@ -1732,9 +1830,35 @@ onMounted(async () => {
   box-shadow: none;
 }
 
+/* Custom dark-mode style for check-record-table textarea, select, input */
+:global(.dark-mode .check-record-table .el-textarea__inner),
+:global(.dark-mode .check-record-table .el-select__wrapper),
+:global(.dark-mode .check-record-table .el-input__wrapper) {
+  background: #262626 !important;
+  box-shadow: 0 0 0 1px #303030 inset !important;
+  color: #f5f5f5 !important;
+}
+
+:global(.dark-mode .check-record-table .el-textarea__inner) {
+  border: 1px solid #303030 !important;
+}
+
 :global(.dark-mode .check-record-table .el-textarea__inner::placeholder),
-:global(.dark-mode .check-record-table .el-input__inner::placeholder) {
-  color: #8c8c8c;
+:global(.dark-mode .check-record-table .el-input__inner::placeholder),
+:global(.dark-mode .check-record-table .el-select__placeholder) {
+  color: #8c8c8c !important;
+}
+
+:global(.dark-mode .check-record-table .el-textarea__inner:hover),
+:global(.dark-mode .check-record-table .el-select__wrapper:hover),
+:global(.dark-mode .check-record-table .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #4b5563 inset !important;
+}
+
+:global(.dark-mode .check-record-table .el-textarea__inner:focus),
+:global(.dark-mode .check-record-table .el-select__wrapper.is-focused),
+:global(.dark-mode .check-record-table .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #66b1ff inset, 0 0 0 2px rgba(64, 158, 255, 0.14) !important;
 }
 
 :global(.dark-mode .check-record-table .el-button.is-link.is-disabled),
@@ -2055,6 +2179,13 @@ onMounted(async () => {
   color: #f56c6c;
 }
 
+.stats-number-gray {
+  color: #303133;
+}
+
+:global(.dark-mode .stats-number-gray) {
+  color: #909399;
+}
 :deep(.col-green .cell) {
   color: #67c23a;
   font-weight: 600;
@@ -2180,5 +2311,76 @@ onMounted(async () => {
 
 :global(.dark-mode .record-action-btn) {
   box-shadow: none;
+}、
+:global(body.dark-mode .el-select-dropdown) {
+  background-color: #1f1f1f !important;
+  border: 1px solid #303030 !important;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+:global(body.dark-mode .el-select-dropdown__item) {
+  color: #ffffff !important;
+  background-color: #1f1f1f !important;
+}
+
+:global(body.dark-mode .el-select-dropdown__item:hover) {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-select-dropdown__item.selected) {
+  background-color: #1d3557 !important;
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-select-dropdown__item:focus) {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-select__wrapper) {
+  border-color: #303030 !important;
+  background-color: #1f1f1f !important;
+}
+
+:global(body.dark-mode .el-select__wrapper:hover) {
+  border-color: #409eff !important;
+}
+
+:global(body.dark-mode .el-select__wrapper.is-focus) {
+  border-color: #409eff !important;
+  box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.2) !important;
+}
+
+:global(body.dark-mode .el-input__inner) {
+  color: #ffffff !important;
+  background-color: #1f1f1f !important;
+  border-color: #303030 !important;
+}
+
+:global(body.dark-mode .el-input__inner::placeholder) {
+  color: #909399 !important;
+}
+
+:global(body.dark-mode .el-popper) {
+  background-color: #1f1f1f !important;
+  border: 1px solid #303030 !important;
+}
+
+:global(body.dark-mode .el-cascader-menu) {
+  background-color: #1f1f1f !important;
+  border-right: 1px solid #303030 !important;
+}
+
+:global(body.dark-mode .el-cascader-node) {
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-cascader-node:hover) {
+  background-color: #2a2a2a !important;
+}
+
+:global(body.dark-mode .el-cascader-node.is-active) {
+  color: #409eff !important;
 }
 </style>
