@@ -986,9 +986,9 @@ const assetTypeLabel = computed(() => {
 
 const guideOptions = computed(() => {
   if (activeAssetTab.value === 'server_storage') {
-    return ['Redhat Linux']
+    return ['Redhat Linux', 'Ubuntu', '银河麒麟', '统信']
   }
-  return ['达梦']
+  return ['达梦', '人大金仓']
 })
 
 const openCreateDialog = () => {

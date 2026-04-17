@@ -11,9 +11,13 @@ DATA_START_ROW = 9
 def get_file_config(filename: str) -> dict:
     """
     根据文件名确定资产类型和作业指导书类型
-    第一版只支持两个模板文件：
+    当前支持六个模板文件：
     - RedhatLinux模板.xlsx
+    - Ubuntu模板.xlsx
+    - 银河麒麟模板.xlsx
+    - 统信模板.xlsx
     - 达梦模板.xlsx
+    - 人大金仓模板.xlsx
     """
     lower_name = filename.lower()
 
@@ -23,13 +27,37 @@ def get_file_config(filename: str) -> dict:
             "guide_name": "Redhat Linux",
         }
 
+    if "ubuntu" in lower_name:
+        return {
+            "asset_type": "server_storage",
+            "guide_name": "Ubuntu",
+        }
+
+    if "银河麒麟" in filename or "kylin" in lower_name:
+        return {
+            "asset_type": "server_storage",
+            "guide_name": "银河麒麟",
+        }
+
+    if "统信" in filename or "uos" in lower_name:
+        return {
+            "asset_type": "server_storage",
+            "guide_name": "统信",
+        }
+
+    if "人大金仓" in filename or "kingbase" in lower_name:
+        return {
+            "asset_type": "database",
+            "guide_name": "人大金仓",
+        }
+
     if "达梦" in filename or "dm" in lower_name:
         return {
             "asset_type": "database",
             "guide_name": "达梦",
         }
 
-    raise ValueError("暂时只支持 RedhatLinux模板.xlsx 和 达梦模板.xlsx")
+    raise ValueError("暂时只支持 RedhatLinux模板.xlsx、Ubuntu模板.xlsx、银河麒麟模板.xlsx、统信模板.xlsx、达梦模板.xlsx 和 人大金仓模板.xlsx")
 
 
 def build_column_mapping(header_values: list[str]) -> dict:

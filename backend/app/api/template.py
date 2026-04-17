@@ -85,6 +85,14 @@ def supplement_template_fields(db, asset_type: str, guide_name: str):
 
     if asset_type == "server_storage" and "Redhat" in guide_name_text:
         full_field_filename = "Redhat Linux完整字段.xlsx"
+    elif asset_type == "server_storage" and "Ubuntu" in guide_name_text:
+        full_field_filename = "Ubuntu完整字段.xlsx"
+    elif asset_type == "server_storage" and "银河麒麟" in guide_name_text:
+        full_field_filename = "银河麒麟完整字段.xlsx"
+    elif asset_type == "server_storage" and "统信" in guide_name_text:
+        full_field_filename = "统信完整字段.xlsx"
+    elif asset_type == "database" and "人大金仓" in guide_name_text:
+        full_field_filename = "人大金仓完整字段.xlsx"
     elif asset_type == "database" and "达梦" in guide_name_text:
         full_field_filename = "达梦完整字段.xlsx"
     else:

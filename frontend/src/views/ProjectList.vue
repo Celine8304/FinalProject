@@ -81,7 +81,7 @@
 
       <!-- 新建项目弹窗 -->
       <el-dialog v-model="createDialogVisible" title="新建项目" width="600px">
-        <el-form ref="createFormRef" :model="createForm" :rules="formRules" label-width="120px">
+        <el-form ref="createFormRef" class="project-dialog-form" :model="createForm" :rules="formRules" label-width="120px">
           <el-form-item label="项目编号" prop="project_code">
             <el-input v-model="createForm.project_code" />
           </el-form-item>
@@ -118,7 +118,7 @@
 
       <!-- 编辑项目弹窗 -->
       <el-dialog v-model="editDialogVisible" title="编辑项目" width="600px">
-        <el-form ref="editFormRef" :model="editForm" :rules="formRules" label-width="120px">
+        <el-form ref="editFormRef" class="project-dialog-form" :model="editForm" :rules="formRules" label-width="120px">
           <el-form-item label="项目编号" prop="project_code">
             <el-input v-model="editForm.project_code" />
           </el-form-item>
@@ -428,11 +428,64 @@ const editForm = ref({
   is_archived: false
 })
 
+const originalEditForm = ref(null)
+
+const PROJECT_CODE_MAX_LENGTH = 30
+const PROJECT_TEXT_MAX_LENGTH = 100
+
+const trimFormFields = (form) => ({
+  ...form,
+  project_code: (form.project_code || '').trim(),
+  project_name: (form.project_name || '').trim(),
+  system_name: (form.system_name || '').trim(),
+  organization_name: (form.organization_name || '').trim()
+})
+
+const isSameProjectForm = (formA, formB) => {
+  if (!formA || !formB) return false
+  return (
+    formA.project_code === formB.project_code &&
+    formA.project_name === formB.project_name &&
+    formA.system_name === formB.system_name &&
+    formA.organization_name === formB.organization_name &&
+    formA.level === formB.level &&
+    formA.standard_system === formB.standard_system &&
+    !!formA.is_archived === !!formB.is_archived
+  )
+}
+
+const validateNoBlankAndMaxLength = (label, maxLength) => {
+  return (_rule, value, callback) => {
+    const trimmed = (value || '').trim()
+    if (value && !trimmed) {
+      callback(new Error(`请输入${label}`))
+      return
+    }
+    if (trimmed.length > maxLength) {
+      callback(new Error(`${label}长度不能超过${maxLength}个字符`))
+      return
+    }
+    callback()
+  }
+}
+
 const formRules = {
-  project_code: [{ required: true, message: '请输入项目编号', trigger: 'blur' }],
-  project_name: [{ required: true, message: '请输入项目名称', trigger: 'blur' }],
-  system_name: [{ required: true, message: '请输入系统名称', trigger: 'blur' }],
-  organization_name: [{ required: true, message: '请输入被测单位', trigger: 'blur' }],
+  project_code: [
+    { required: true, message: '请输入项目编号', trigger: 'blur' },
+    { validator: validateNoBlankAndMaxLength('项目编号', PROJECT_CODE_MAX_LENGTH), trigger: 'blur' }
+  ],
+  project_name: [
+    { required: true, message: '请输入项目名称', trigger: 'blur' },
+    { validator: validateNoBlankAndMaxLength('项目名称', PROJECT_TEXT_MAX_LENGTH), trigger: 'blur' }
+  ],
+  system_name: [
+    { required: true, message: '请输入系统名称', trigger: 'blur' },
+    { validator: validateNoBlankAndMaxLength('系统名称', PROJECT_TEXT_MAX_LENGTH), trigger: 'blur' }
+  ],
+  organization_name: [
+    { required: true, message: '请输入被测单位', trigger: 'blur' },
+    { validator: validateNoBlankAndMaxLength('被测单位', PROJECT_TEXT_MAX_LENGTH), trigger: 'blur' }
+  ],
   level: [{ required: true, message: '请选择安全保护等级', trigger: 'change' }],
   standard_system: [{ required: true, message: '请选择标准体系', trigger: 'change' }]
 }
@@ -637,11 +690,14 @@ const openCreateDialog = () => {
     standard_system: '',
     is_archived: false
   }
+  createFormRef.value?.clearValidate()
   createDialogVisible.value = true
 }
 
 const handleCreateProject = async () => {
   if (!createFormRef.value) return
+
+  createForm.value = trimFormFields(createForm.value)
 
   await createFormRef.value.validate(async (valid) => {
     if (!valid) return
@@ -649,7 +705,7 @@ const handleCreateProject = async () => {
     creating.value = true
     try {
       const payload = {
-        ...createForm.value,
+        ...trimFormFields(createForm.value),
         user_id: currentUser.value?.id
       }
       await createProject(payload)
@@ -677,18 +733,28 @@ const openEditDialog = (row) => {
     standard_system: row.standard_system || '',
     is_archived: !!row.is_archived
   }
+  originalEditForm.value = trimFormFields(editForm.value)
+  editFormRef.value?.clearValidate()
   editDialogVisible.value = true
 }
 
 const handleUpdate = async () => {
   if (!editFormRef.value) return
 
+  editForm.value = trimFormFields(editForm.value)
+
   await editFormRef.value.validate(async (valid) => {
     if (!valid) return
 
+    const normalizedForm = trimFormFields(editForm.value)
+    if (isSameProjectForm(normalizedForm, originalEditForm.value)) {
+      ElMessage.info('未修改')
+      return
+    }
+
     saving.value = true
     try {
-      const { id, ...payload } = editForm.value
+      const { id, ...payload } = normalizedForm
       await updateProject(id, payload)
       ElMessage.success('项目修改成功')
       editDialogVisible.value = false
@@ -828,6 +894,42 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
+.project-dialog-form {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 8px 18px 0;
+  box-sizing: border-box;
+}
+
+:deep(.project-dialog-form .el-form-item__label) {
+  padding-right: 28px;
+  white-space: nowrap;
+}
+:deep(.project-dialog-form .el-form-item__label-wrap) {
+  white-space: nowrap;
+}
+:deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  padding: 28px 32px 12px;
+}
+
+:deep(.el-dialog__body) {
+  padding: 18px 34px 10px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 8px 34px 28px;
+  display: flex;
+  justify-content: center;
+}
+
+:deep(.el-dialog__footer .el-button + .el-button) {
+  margin-left: 16px;
+}
 :deep(.el-input__wrapper) {
   min-height: 44px;
   border-radius: 8px;
