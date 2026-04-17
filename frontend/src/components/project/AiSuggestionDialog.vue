@@ -100,4 +100,31 @@ watch(
   line-height: 1.8;
   color: #303133;
 }
+
+:global(body.dark-mode .el-dialog) {
+  background-color: #1f1f1f !important;
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-dialog__header) {
+  border-bottom: 1px solid #303030 !important;
+}
+
+:global(body.dark-mode .el-dialog__title) {
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-card) {
+  background-color: #262626 !important;
+  border-color: #303030 !important;
+  color: #ffffff !important;
+}
+
+:global(body.dark-mode .el-card__header) {
+  border-bottom: 1px solid #303030 !important;
+}
+
+:global(body.dark-mode .ai-text) {
+  color: #d9d9d9 !important;
+}
 </style>
